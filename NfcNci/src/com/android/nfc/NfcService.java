@@ -2243,6 +2243,13 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback 
     }
 
     final class NfcAdapterService extends INfcAdapter.Stub {
+        /**
+         * An interface for vendor specific extensions
+         */
+        public IBinder getNfcAdapterVendorInterface(String vendor) {
+            return null;
+        }
+
         @Override
         public boolean enable(String pkg) throws RemoteException {
             if (Flags.checkPassedInPackage()) {
