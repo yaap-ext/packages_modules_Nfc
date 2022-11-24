@@ -27,6 +27,7 @@ public final class Constants {
 
     public static final String SETTINGS_SECURE_NFC_PAYMENT_FOREGROUND = "nfc_payment_foreground";
     public static final String SETTINGS_SECURE_NFC_PAYMENT_DEFAULT_COMPONENT = "nfc_payment_default_component";
+    public static final String SETTINGS_SECURE_NFC_SOUNDS = "nfc_sounds";
     public static final String FEATURE_NFC_ANY = "android.hardware.nfc.any";
 
     /**

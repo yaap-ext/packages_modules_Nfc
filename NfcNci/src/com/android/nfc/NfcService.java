@@ -324,6 +324,7 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback 
     // for use with playSound()
     public static final int SOUND_END = 1;
     public static final int SOUND_ERROR = 2;
+    private boolean mPlaySounds = true;
 
     public static final int NCI_VERSION_2_0 = 0x20;
 
@@ -1533,6 +1534,12 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback 
     }
 
     void initSoundPoolIfNeededAndPlaySound(Runnable playSoundRunnable) {
+        mSettingsObserver.update();
+        mSettingsObserver.observe();
+        if (!mPlaySounds) {
+            Log.d(TAG, "NFC sounds are disabled by the user");
+            return;
+        }
         if (mSoundPool == null) {
             // For the first sound play which triggers the sound pool initialization, play the
             // sound after sound pool load is complete.
@@ -1568,6 +1575,7 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback 
 
     void releaseSoundPool() {
         synchronized (this) {
+            mSettingsObserver.stop();
             if (mSoundPool != null) {
                 mSoundPool.release();
                 mSoundPool = null;
@@ -6009,6 +6017,34 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback 
         }
     };
 
+    private final SettingsObserver mSettingsObserver = new SettingsObserver();
+    private class SettingsObserver extends ContentObserver {
+        SettingsObserver() {
+            super(mHandler);
+        }
+
+        void update() {
+            mPlaySounds = Settings.Secure.getInt(
+                    mContext.getContentResolver(),
+                    Constants.SETTINGS_SECURE_NFC_SOUNDS, 1) == 1;
+        }
+
+        void observe() {
+            mContext.getContentResolver().registerContentObserver(
+                    Settings.Secure.getUriFor(Constants.SETTINGS_SECURE_NFC_SOUNDS),
+                    false, this);
+        }
+
+        void stop() {
+            mContext.getContentResolver().unregisterContentObserver(this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            update();
+        }
+    }
+
     private void applyScreenState(int screenState) {
         if (mFeatureFlags.reduceStateTransition()
                 && mIsWatchType && !mCardEmulationManager.isRequiresScreenOnServiceExist()) {
@@ -6333,4 +6369,3 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback 
         return result;
     }
 }
-
